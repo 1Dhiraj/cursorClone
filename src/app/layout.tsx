@@ -3,7 +3,6 @@ import { Inter, IBM_Plex_Mono } from "next/font/google";
 import { Providers } from "@/components/provider";
 
 import { dark } from '@clerk/themes'
-import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 

@@ -1,36 +1,42 @@
-"use client"
-import { ClerkProvider, useAuth, UserButton } from "@clerk/nextjs"
-import { AuthLoading, ConvexReactClient, Unauthenticated } from "convex/react"
-import { ConvexProviderWithClerk } from "convex/react-clerk"
-import { ThemeProvider } from "./theme-provider"
-import { Authenticated, } from "convex/react"
-import { UnauthenticatedView } from "@/features/auth/components/unauthenticated-view"
-import { AuthLoadingView } from "@/features/auth/components/auth-loading-view"
+"use client";
 
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+import { 
+  Authenticated, 
+  Unauthenticated,
+  ConvexReactClient,
+  AuthLoading, 
+} from "convex/react";
+import { ClerkProvider, useAuth } from "@clerk/nextjs";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+
+import { UnauthenticatedView } from "@/features/auth/components/unauthenticated-view";
+import { AuthLoadingView } from "@/features/auth/components/auth-loading-view";
+
+import { ThemeProvider } from "./theme-provider";
+
+const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
-    return (
-        <ClerkProvider>
-            <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="dark"
-                    enableSystem
-                    disableTransitionOnChange>
-                    <Authenticated>
-                        <UserButton/>
-                    </Authenticated>
-                    <Unauthenticated>
-                        <UnauthenticatedView/>
-                        
-                    </Unauthenticated>
-                    <AuthLoading>
-                        <AuthLoadingView/>
-                    </AuthLoading>
-                        {children}
-                </ThemeProvider>
-            </ConvexProviderWithClerk>
-        </ClerkProvider>
-    )
-}
+  return (
+    <ClerkProvider>
+      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+         <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Authenticated>
+            {children}
+          </Authenticated>
+          <Unauthenticated>
+            <UnauthenticatedView />
+          </Unauthenticated>
+          <AuthLoading>
+            <AuthLoadingView />
+          </AuthLoading>
+        </ThemeProvider>
+      </ConvexProviderWithClerk>
+    </ClerkProvider>
+  );
+};
