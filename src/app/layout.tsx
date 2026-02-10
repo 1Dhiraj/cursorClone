@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Inter, IBM_Plex_Mono } from "next/font/google";
-import { Providers } from "@/components/provider";
+import { IBM_Plex_Mono, Inter } from "next/font/google";
 
-import { dark } from '@clerk/themes'
+import { Toaster } from "@/components/ui/sonner";
+import { Providers } from "@/components/providers";
+
 import "./globals.css";
 
-
 const inter = Inter({
-  variable: "--font-geist-sans",
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -28,21 +28,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} ${plexMono.variable} antialiased`}
-      >
-
-        
-        <Providers>
-          
-          {children}
-          
-        </Providers>
-
-      </body>
-    </html>
-
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={`${inter.variable} ${plexMono.variable} antialiased`}
+        >
+          <Providers>
+            {children}
+            <Toaster />
+          </Providers>
+        </body>
+      </html>
   );
 }
