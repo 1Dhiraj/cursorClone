@@ -11,6 +11,7 @@ import { customSetup } from "../extensions/custom-setup";
 import { suggestion } from "../extensions/suggestion";
 import { quickEdit } from "../extensions/quick-edit";
 import { selectionTooltip } from "../extensions/selection-tooltip";
+import { useAddToChat } from "../contexts/add-to-chat-context";
 
 interface Props {
   fileName: string;
@@ -18,13 +19,14 @@ interface Props {
   onChange: (value: string) => void;
 }
 
-export const CodeEditor = ({ 
-  fileName, 
+export const CodeEditor = ({
+  fileName,
   initialValue = "",
   onChange
 }: Props) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+  const { addToChat } = useAddToChat();
 
   const languageExtension = useMemo(() => {
     return getLanguageExtension(fileName)
@@ -41,9 +43,9 @@ export const CodeEditor = ({
         customTheme,
         customSetup,
         languageExtension,
-        suggestion(fileName),
+        // suggestion(fileName), // Disabled to save API quota - uncomment to re-enable AI completions
         quickEdit(fileName),
-        selectionTooltip(),
+        selectionTooltip(addToChat),
         keymap.of([indentWithTab]),
         minimap(),
         indentationMarkers(),

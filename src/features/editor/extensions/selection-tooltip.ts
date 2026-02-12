@@ -5,7 +5,8 @@ import { showQuickEditEffect, quickEditState } from "./quick-edit";
 let editorView: EditorView | null = null;
 
 const createTooltipForSelection = (
-  state: EditorState
+  state: EditorState,
+  onAddToChat?: (text: string) => void
 ): readonly Tooltip[] => {
   const selection = state.selection.main;
 
@@ -28,11 +29,23 @@ const createTooltipForSelection = (
         dom.className =
           "bg-popover text-popover-foreground z-50 rounded-sm border border-input p-1 shadow-md flex items-center gap-2 text-sm";
 
+
         const addToChatButton = document.createElement("button");
         addToChatButton.textContent = "Add to Chat";
         addToChatButton.className =
-            "font-sans p-1 px-2 hover:bg-foreground/10 rounded-sm";
-        
+          "font-sans p-1 px-2 hover:bg-foreground/10 rounded-sm";
+
+        addToChatButton.onclick = () => {
+          if (onAddToChat) {
+            const selectedText = state.sliceDoc(selection.from, selection.to);
+            // Format as code block if it contains newlines
+            const formattedText = selectedText.includes('\n')
+              ? `\`\`\`\n${selectedText}\n\`\`\``
+              : `\`${selectedText}\``;
+            onAddToChat(formattedText);
+          }
+        };
+
         const quickEditButton = document.createElement("button");
         quickEditButton.className =
           "font-sans p-1 px-2 hover:bg-foreground/10 rounded-sm flex items-center gap-1";
@@ -64,18 +77,18 @@ const createTooltipForSelection = (
   ]
 }
 
-const selectionTooltipField = StateField.define<readonly Tooltip[]>({
+const selectionTooltipField = (onAddToChat?: (text: string) => void) => StateField.define<readonly Tooltip[]>({
   create(state) {
-    return createTooltipForSelection(state);
+    return createTooltipForSelection(state, onAddToChat);
   },
 
   update(tooltips, transaction) {
     if (transaction.docChanged || transaction.selection) {
-      return createTooltipForSelection(transaction.state);
+      return createTooltipForSelection(transaction.state, onAddToChat);
     }
     for (const effect of transaction.effects) {
       if (effect.is(showQuickEditEffect)) {
-        return createTooltipForSelection(transaction.state);
+        return createTooltipForSelection(transaction.state, onAddToChat);
       }
     }
     return tooltips;
@@ -91,7 +104,7 @@ const captureViewExtension = EditorView.updateListener.of((update) => {
   editorView = update.view;
 });
 
-export const selectionTooltip = () => [
-  selectionTooltipField,
+export const selectionTooltip = (onAddToChat?: (text: string) => void) => [
+  selectionTooltipField(onAddToChat),
   captureViewExtension,
 ];
