@@ -3,6 +3,7 @@
 import { Allotment } from "allotment";
 
 import { ConversationSidebar } from "@/features/conversations/components/conversation-sidebar";
+import { AddToChatProvider } from "@/features/editor/contexts/add-to-chat-context";
 
 import { Navbar } from "./navbar";
 import { Id } from "../../../../convex/_generated/dataModel";
@@ -20,29 +21,31 @@ export const ProjectIdLayout = ({
   projectId: Id<"projects">;
 }) => {
   return (
-    <div className="w-full h-screen flex flex-col">
-      <Navbar projectId={projectId} />
-      <div className="flex-1 flex overflow-hidden">
-        <Allotment
-          className="flex-1"
-          defaultSizes={[
-            DEFAULT_CONVERSATION_SIDEBAR_WIDTH,
-            DEFAULT_MAIN_SIZE
-          ]}
-        >
-          <Allotment.Pane
-            snap
-            minSize={MIN_SIDEBAR_WIDTH}
-            maxSize={MAX_SIDEBAR_WIDTH}
-            preferredSize={DEFAULT_CONVERSATION_SIDEBAR_WIDTH}
+    <AddToChatProvider>
+      <div className="w-full h-screen flex flex-col">
+        <Navbar projectId={projectId} />
+        <div className="flex-1 flex overflow-hidden">
+          <Allotment
+            className="flex-1"
+            defaultSizes={[
+              DEFAULT_CONVERSATION_SIDEBAR_WIDTH,
+              DEFAULT_MAIN_SIZE
+            ]}
           >
-            <ConversationSidebar projectId={projectId} />
-          </Allotment.Pane>
-          <Allotment.Pane>
-            {children}
-          </Allotment.Pane>
-        </Allotment>
+            <Allotment.Pane
+              snap
+              minSize={MIN_SIDEBAR_WIDTH}
+              maxSize={MAX_SIDEBAR_WIDTH}
+              preferredSize={DEFAULT_CONVERSATION_SIDEBAR_WIDTH}
+            >
+              <ConversationSidebar projectId={projectId} />
+            </Allotment.Pane>
+            <Allotment.Pane>
+              {children}
+            </Allotment.Pane>
+          </Allotment>
+        </div>
       </div>
-    </div>
+    </AddToChatProvider>
   );
 };
