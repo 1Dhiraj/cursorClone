@@ -89,10 +89,13 @@ export const ConversationSidebar = ({
 
   const handleCancel = async () => {
     try {
-      await ky.post("/api/messages/cancel", {
+      const response = await ky.post("/api/messages/cancel", {
         json: { projectId },
-      });
-    } catch {
+      }).json();
+      console.log("Cancel response:", response);
+      toast.success("Request cancelled");
+    } catch (error) {
+      console.error("Cancel error:", error);
       toast.error("Unable to cancel request");
     }
   };
