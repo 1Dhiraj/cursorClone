@@ -1,0 +1,5 @@
+{
+    "serve": {
+        "path": "/api/inngest"
+    }
+}

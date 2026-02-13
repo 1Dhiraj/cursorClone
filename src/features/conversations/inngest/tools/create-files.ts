@@ -52,10 +52,29 @@ export const createCreateFilesTool = ({
         return `Error: ${parsed.error.issues[0].message}`;
       }
 
-      const { parentId, files } = parsed.data;
+      const { parentId, files: rawFiles } = parsed.data;
+
+      // Sanitize JSON content (fix double-stringification from AI)
+      const files = rawFiles.map(file => {
+        if (file.name.endsWith('.json') && typeof file.content === 'string') {
+          try {
+            const trimmed = file.content.trim();
+            if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+              const parsed = JSON.parse(file.content);
+              // If parsing results in a string, then it was double-stringified
+              if (typeof parsed === 'string') {
+                return { ...file, content: parsed };
+              }
+            }
+          } catch (e) {
+            // Ignore parse errors, leave content as is
+          }
+        }
+        return file;
+      });
 
       try {
-        return await toolStep?.run("create-files", async () => {
+        const performCreate = async () => {
           let resolvedParentId: Id<"files"> | undefined;
 
           if (parentId && parentId !== "") {
@@ -95,7 +114,17 @@ export const createCreateFilesTool = ({
           }
 
           return response;
-        });
+        };
+
+        try {
+          if (toolStep) {
+            return await toolStep.run("create-files", performCreate);
+          } else {
+            return await performCreate();
+          }
+        } catch (error) {
+          return `Error creating files: ${error instanceof Error ? error.message : "Unknown error"}`;
+        }
       } catch (error) {
         return `Error creating files: ${error instanceof Error ? error.message : "Unknown error"}`;
       }
