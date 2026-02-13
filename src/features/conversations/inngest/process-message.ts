@@ -121,7 +121,7 @@ export const processMessage = inngest.createFunction(
         name: "title-generator",
         system: TITLE_GENERATOR_SYSTEM_PROMPT,
         model: gemini({
-          model: "gemini-2.5-flash",
+          model: "gemini-1.5-flash",
           defaultParameters: {
             generationConfig: {
               temperature: 0,
@@ -189,8 +189,8 @@ export const processMessage = inngest.createFunction(
     const network = createNetwork({
       name: "polaris-network",
       agents: [codingAgent],
-      maxIter: 5,  // Reduced from 20 to limit API calls per prompt
-      router: ({ network }) => {
+      maxIter: 15,  // Increased from 10 to 15 allow completion (but still below 20)
+      router: async ({ network }) => {
         const lastResult = network.state.results.at(-1);
         const hasTextResponse = lastResult?.output.some(
           (m) => m.type === "text" && m.role === "assistant"
@@ -204,6 +204,21 @@ export const processMessage = inngest.createFunction(
         if (hasTextResponse && !hasToolCalls) {
           return undefined;
         }
+
+        // Update progress to give user feedback
+        const iteration = network.state.results.length;
+        await step.run(`progress-update-${iteration}`, async () => {
+          await convex.mutation(api.system.updateMessageContent, {
+            internalKey,
+            messageId,
+            content: `Thinking... (Step ${iteration}/${codingAgent.maxIter ?? 10})`,
+          });
+        });
+
+        // Add delay to prevent Gemini API rate limiting
+        // Wait 4 seconds between iterations to stay within rate limits (approx 15 RPM)
+        await new Promise(resolve => setTimeout(resolve, 4000));
+
         return codingAgent;
       }
     });

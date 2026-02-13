@@ -37,9 +37,9 @@ export const createDeleteFilesTool = ({
       const { fileIds } = parsed.data;
 
       // Validate all files exist before running the step
-      const filesToDelete: { 
-        id: string; 
-        name: string; 
+      const filesToDelete: {
+        id: string;
+        name: string;
         type: string
       }[] = [];
 
@@ -60,21 +60,27 @@ export const createDeleteFilesTool = ({
         });
       }
 
+      const performDelete = async () => {
+        const results: string[] = [];
+
+        for (const file of filesToDelete) {
+          await convex.mutation(api.system.deleteFile, {
+            internalKey,
+            fileId: file.id as Id<"files">,
+          });
+
+          results.push(`Deleted ${file.type} "${file.name}" successfully`);
+        }
+
+        return results.join("\n");
+      };
+
       try {
-        return await toolStep?.run("delete-files", async () => {
-          const results: string[] = [];
-
-          for (const file of filesToDelete) {
-            await convex.mutation(api.system.deleteFile, {
-              internalKey,
-              fileId: file.id as Id<"files">,
-            });
-
-            results.push(`Deleted ${file.type} "${file.name}" successfully`);
-          }
-
-          return results.join("\n");
-        });
+        if (toolStep) {
+          return await toolStep.run("delete-files", performDelete);
+        } else {
+          return await performDelete();
+        }
       } catch (error) {
         return `Error deleting files: ${error instanceof Error ? error.message : "Unknown error"}`;
       }

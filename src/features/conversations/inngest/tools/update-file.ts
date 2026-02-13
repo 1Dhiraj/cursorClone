@@ -31,7 +31,7 @@ export const createUpdateFileTool = ({
         return `Error: ${parsed.error.issues[0].message}`;
       }
 
-      const { fileId, content } = parsed.data;
+      const { fileId, content: rawContent } = parsed.data;
 
       // Validate file exists before running the step
       const file = await convex.query(api.system.getFileById, {
@@ -48,16 +48,37 @@ export const createUpdateFileTool = ({
         return `Error: "${fileId}" is a folder, not a file. You can only update file contents.`;
       }
 
-      try {
-        return await toolStep?.run("update-file", async () => {
-          await convex.mutation(api.system.updateFile, {
-            internalKey,
-            fileId: fileId as Id<"files">,
-            content,
-          });
+      let content = rawContent;
+      if (file.name.endsWith('.json')) {
+        try {
+          const trimmed = rawContent.trim();
+          if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+            const parsed = JSON.parse(rawContent);
+            if (typeof parsed === 'string') {
+              content = parsed;
+            }
+          }
+        } catch (e) {
+          // Ignore
+        }
+      }
 
-          return `File "${file.name}" updated successfully`;
-        })
+      const performUpdate = async () => {
+        await convex.mutation(api.system.updateFile, {
+          internalKey,
+          fileId: fileId as Id<"files">,
+          content,
+        });
+
+        return `File "${file.name}" updated successfully`;
+      };
+
+      try {
+        if (toolStep) {
+          return await toolStep.run("update-file", performUpdate);
+        } else {
+          return await performUpdate();
+        }
       } catch (error) {
         return `Error update file: ${error instanceof Error ? error.message : "Unknown error"}`;
       }

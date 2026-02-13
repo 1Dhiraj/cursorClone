@@ -31,31 +31,37 @@ export const createReadFilesTool = ({ internalKey }: ReadFilesToolOptions) => {
 
       const { fileIds } = parsed.data;
 
-      try {
-        return await toolStep?.run("read-files", async () => {
-          const results: { id: string; name: string; content: string }[] = [];
+      const performRead = async () => {
+        const results: { id: string; name: string; content: string }[] = [];
 
-          for (const fileId of fileIds) {
-            const file = await convex.query(api.system.getFileById, {
-              internalKey,
-              fileId: fileId as Id<"files">,
+        for (const fileId of fileIds) {
+          const file = await convex.query(api.system.getFileById, {
+            internalKey,
+            fileId: fileId as Id<"files">,
+          });
+
+          if (file && file.content) {
+            results.push({
+              id: file._id,
+              name: file.name,
+              content: file.content,
             });
+          };
+        }
 
-            if (file && file.content) {
-              results.push({
-                id: file._id,
-                name: file.name,
-                content: file.content,
-              });
-            };
-          }
+        if (results.length === 0) {
+          return "Error: No files found with provided IDs. Use listFiles to get valid fileIDs.";
+        }
 
-          if (results.length === 0) {
-            return "Error: No files found with provided IDs. Use listFiles to get valid fileIDs.";
-          }
+        return JSON.stringify(results);
+      };
 
-          return JSON.stringify(results);
-        })
+      try {
+        if (toolStep) {
+          return await toolStep.run("read-files", performRead);
+        } else {
+          return await performRead();
+        }
       } catch (error) {
         return `Error reading files: ${error instanceof Error ? error.message : "Unknown error"}`;
       }
