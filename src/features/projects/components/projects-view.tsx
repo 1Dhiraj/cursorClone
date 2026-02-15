@@ -18,6 +18,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { ProjectsList } from "./projects-list";
 import { useCreateProject } from "../hooks/use-projects";
 import { ProjectsCommandDialog } from "./project-command-dialog";
+import { ImportGithubDialog } from "./import-github-dialog";
 
 
 const font = Poppins({
@@ -55,7 +56,11 @@ export const ProjectsView = () => {
                 open={commandDialogOpen}
                 onOpenChange={setCommandDialogOpen}
             />
-            
+            <ImportGithubDialog
+                open={importDialogOpen}
+                onOpenChange={setImportDialogOpen}
+            />
+
             <div className="min-h-screen bg-sidebar flex flex-col items-center justify-center p-6 md:p-16">
                 <div className="w-full max-w-sm mx-auto flex flex-col gap-4 items-center">
 
