@@ -1,11 +1,9 @@
 "use client";
 
-import type { CarouselApi } from "@/components/ui/carousel";
-import type { ComponentProps } from "react";
-
 import { Badge } from "@/components/ui/badge";
 import {
   Carousel,
+  type CarouselApi,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
@@ -17,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import {
+  type ComponentProps,
   createContext,
   useCallback,
   useContext,
@@ -164,18 +163,13 @@ export const InlineCitationCarouselIndex = ({
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCount(api.scrollSnapList().length);
     setCurrent(api.selectedScrollSnap() + 1);
 
-    const handleSelect = () => {
+    api.on("select", () => {
       setCurrent(api.selectedScrollSnap() + 1);
-    };
-
-    api.on("select", handleSelect);
-
-    return () => {
-      api.off("select", handleSelect);
-    };
+    });
   }, [api]);
 
   return (
