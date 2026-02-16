@@ -1,5 +1,7 @@
 import { ProjectIdLayout } from "@/features/projects/components/project-id-layout";
 
+import { Id } from "../../../../convex/_generated/dataModel";
+
 const Layout = async ({
   children,
   params,
@@ -11,7 +13,7 @@ const Layout = async ({
 
   return (
     <ProjectIdLayout
-      projectId={projectId}
+      projectId={projectId as Id<"projects">}
     >
       {children}
     </ProjectIdLayout>

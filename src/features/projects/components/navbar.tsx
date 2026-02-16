@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { CloudCheckIcon, LoaderIcon, AlertCircleIcon } from "lucide-react";
+import { CloudCheckIcon, LoaderIcon } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import { Poppins } from "next/font/google";
 import { formatDistanceToNow } from "date-fns";
@@ -38,7 +38,7 @@ export const Navbar = ({
   projectId: Id<"projects">;
 }) => {
   const project = useProject(projectId);
-  const renameProject = useRenameProject(projectId);
+  const renameProject = useRenameProject();
 
   const [isRenaming, setIsRenaming] = useState(false);
   const [name, setName] = useState("");
@@ -132,13 +132,6 @@ export const Navbar = ({
             </TooltipTrigger>
             <TooltipContent>Importing...</TooltipContent>
           </Tooltip>
-        ) : project?.importStatus === "failed" ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <AlertCircleIcon className="size-4 text-destructive" />
-            </TooltipTrigger>
-            <TooltipContent>Import failed</TooltipContent>
-          </Tooltip>
         ) : (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -146,7 +139,7 @@ export const Navbar = ({
             </TooltipTrigger>
             <TooltipContent>
               Saved{" "}
-              {project?.updatedAt
+              {project?.updatedAt 
                 ? formatDistanceToNow(
                   project.updatedAt,
                   { addSuffix: true, }
