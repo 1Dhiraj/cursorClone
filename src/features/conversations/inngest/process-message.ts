@@ -185,11 +185,13 @@ export const processMessage = inngest.createFunction(
       ],
     });
 
+    const MAX_ITERATIONS = 15;
+
     // Create network with single agent
     const network = createNetwork({
       name: "polaris-network",
       agents: [codingAgent],
-      maxIter: 15,  // Increased from 10 to 15 allow completion (but still below 20)
+      maxIter: MAX_ITERATIONS,  // Increased from 10 to 15 allow completion (but still below 20)
       router: async ({ network }) => {
         const lastResult = network.state.results.at(-1);
         const hasTextResponse = lastResult?.output.some(
@@ -211,7 +213,7 @@ export const processMessage = inngest.createFunction(
           await convex.mutation(api.system.updateMessageContent, {
             internalKey,
             messageId,
-            content: `Thinking... (Step ${iteration}/${codingAgent.maxIter ?? 10})`,
+            content: `Thinking... (Step ${iteration}/${MAX_ITERATIONS})`,
           });
         });
 
