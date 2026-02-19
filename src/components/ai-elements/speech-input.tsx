@@ -8,55 +8,50 @@ import { cn } from "@/lib/utils";
 import { MicIcon, SquareIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-interface SpeechRecognition extends EventTarget {
+
+interface ISpeechRecognition extends EventTarget {
   continuous: boolean;
   interimResults: boolean;
   lang: string;
   start(): void;
   stop(): void;
-  onstart: ((this: SpeechRecognition, ev: Event) => void) | null;
-  onend: ((this: SpeechRecognition, ev: Event) => void) | null;
+  onstart: ((this: ISpeechRecognition, ev: Event) => void) | null;
+  onend: ((this: ISpeechRecognition, ev: Event) => void) | null;
   onresult:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void)
-    | null;
+  | ((this: ISpeechRecognition, ev: ISpeechRecognitionEvent) => void)
+  | null;
   onerror:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void)
-    | null;
+  | ((this: ISpeechRecognition, ev: ISpeechRecognitionErrorEvent) => void)
+  | null;
 }
 
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
+interface ISpeechRecognitionEvent extends Event {
+  results: ISpeechRecognitionResultList;
   resultIndex: number;
 }
 
-interface SpeechRecognitionResultList {
+interface ISpeechRecognitionResultList {
   readonly length: number;
-  item(index: number): SpeechRecognitionResult;
-  [index: number]: SpeechRecognitionResult;
+  item(index: number): ISpeechRecognitionResult;
+  [index: number]: ISpeechRecognitionResult;
 }
 
-interface SpeechRecognitionResult {
+interface ISpeechRecognitionResult {
   readonly length: number;
-  item(index: number): SpeechRecognitionAlternative;
-  [index: number]: SpeechRecognitionAlternative;
+  item(index: number): ISpeechRecognitionAlternative;
+  [index: number]: ISpeechRecognitionAlternative;
   isFinal: boolean;
 }
 
-interface SpeechRecognitionAlternative {
+interface ISpeechRecognitionAlternative {
   transcript: string;
   confidence: number;
 }
 
-interface SpeechRecognitionErrorEvent extends Event {
+interface ISpeechRecognitionErrorEvent extends Event {
   error: string;
 }
 
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognition;
-    webkitSpeechRecognition: new () => SpeechRecognition;
-  }
-}
 
 type SpeechInputMode = "speech-recognition" | "media-recorder" | "none";
 
@@ -77,7 +72,7 @@ const detectSpeechInputMode = (): SpeechInputMode => {
     return "none";
   }
 
-  if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
+  if ("SpeechRecognition" in window || "webkitSpeechRecognition" in (window as any)) {
     return "speech-recognition";
   }
 
@@ -99,7 +94,7 @@ export const SpeechInput = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [mode] = useState<SpeechInputMode>(detectSpeechInputMode);
   const [isRecognitionReady, setIsRecognitionReady] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -120,7 +115,8 @@ export const SpeechInput = ({
     }
 
     const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+      ((window as any).SpeechRecognition as unknown as new () => ISpeechRecognition) ||
+      ((window as any).webkitSpeechRecognition as unknown as new () => ISpeechRecognition);
     const speechRecognition = new SpeechRecognition();
 
     speechRecognition.continuous = true;
@@ -136,7 +132,7 @@ export const SpeechInput = ({
     };
 
     const handleResult = (event: Event) => {
-      const speechEvent = event as SpeechRecognitionEvent;
+      const speechEvent = event as ISpeechRecognitionEvent;
       let finalTranscript = "";
 
       for (
